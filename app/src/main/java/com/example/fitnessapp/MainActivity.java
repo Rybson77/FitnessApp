@@ -1,14 +1,12 @@
 package com.example.fitnessapp;
 
+import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,12 +15,12 @@ import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    private DatabaseHelper db;
-    private ListView listView;
-    private TextView tvSummary;
-    private ProgressBar progressBar;
 
-    private static final int PROTEIN_GOAL = 100; // g
+    private DatabaseHelper db;
+    private ListView listViewMeals;
+    private TextView tvProtein;
+    private ProgressBar progressProtein;
+    private Button btnAddMeal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,49 +28,47 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         db = new DatabaseHelper(this);
-        listView = findViewById(R.id.listViewMeals);
-        tvSummary = findViewById(R.id.tvSummary);
-        progressBar = findViewById(R.id.progressBar);
-        progressBar.setMax(PROTEIN_GOAL);
+        listViewMeals = findViewById(R.id.listMeals);
+        tvProtein = findViewById(R.id.tvProtein);
+        progressProtein = findViewById(R.id.progressProtein);
+        btnAddMeal = findViewById(R.id.btnAddMeal);
 
-        Button btnAdd = findViewById(R.id.btnAddMeal);
-        btnAdd.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, AddMealActivity.class)));
+        btnAddMeal.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, AddMealActivity.class))
+        );
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadMeals();
+        displayTodayMeals();
     }
 
-    private void loadMeals() {
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+    private void displayTodayMeals() {
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                .format(new Date());
         List<Meal> meals = db.getMealsByDate(today);
 
-        // Připrav data pro ListView
         List<String> display = new ArrayList<>();
-        int total = 0;
-        List<Food> foods = Food.getFoods();
-
+        int totalProtein = 0;
         for (Meal m : meals) {
-            for (Food f : foods) {
-                if (f.getId().equals(m.getFoodId())) {
-                    int prot = f.getProtein() * m.getQuantity();
-                    total += prot;
-                    display.add(f.getName() + " x" + m.getQuantity() + " = " + prot + "g");
-                    break;
-                }
-            }
+            int qty = m.getQuantity();
+            double protPerUnit = m.getProtein();
+            int protTotal = (int)(protPerUnit * qty);
+            display.add(m.getLabel() + " ×" + qty + " = " + protTotal + " g");
+            totalProtein += protTotal;
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                display
-        );
-        listView.setAdapter(adapter);
+        tvProtein.setText("Protein: " + totalProtein + " g");
+        progressProtein.setMax(100); // nastav si svůj cíl
+        progressProtein.setProgress(totalProtein);
 
-        tvSummary.setText("Celkem bílkovin: " + total + "g / " + PROTEIN_GOAL + "g");
-        progressBar.setProgress(Math.min(total, PROTEIN_GOAL));
+        listViewMeals.setAdapter(
+                new android.widget.ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_list_item_1,
+                        display
+                )
+        );
     }
 }

@@ -1,3 +1,10 @@
+<!-- app/src/main/res/values/strings.xml -->
 <resources>
     <string name="app_name">FitnessApp</string>
+    <string name="hint_quantity">Počet porcí</string>
+    <string name="btn_save">Uložit</string>
+
+    <!-- Přidej tyto dvě řádky: -->
+    <string name="btn_add_meal">Přidat jídlo</string>
+    <string name="protein_default">Protein: 0 g</string>
 </resources>
