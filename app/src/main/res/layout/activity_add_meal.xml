@@ -4,15 +4,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="200px">
+    android:padding="16dp">
+
+    <!-- Vyhledávací pole -->
+    <EditText
+        android:id="@+id/etSearchTerm"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:hint="Hledaný výraz"
+        app:layout_constraintEnd_toStartOf="@+id/btnSearch"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hledej"
+        app:layout_constraintTop_toTopOf="@id/etSearchTerm"
+        app:layout_constraintStart_toEndOf="@id/etSearchTerm"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <Spinner
         android:id="@+id/spinnerFoods"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/etSearchTerm"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -23,8 +42,6 @@
         android:hint="@string/hint_quantity"
         android:inputType="number"
         android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         app:layout_constraintTop_toBottomOf="@id/spinnerFoods"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -35,8 +52,6 @@
         android:layout_height="wrap_content"
         android:text="@string/btn_save"
         android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         app:layout_constraintTop_toBottomOf="@id/etQuantity"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

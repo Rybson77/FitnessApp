@@ -18,14 +18,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class AddMealActivity extends AppCompatActivity {
-    private Spinner spinnerFoods;
-    private EditText etQuantityGrams;
+    private EditText etSearchTerm, etQuantity;
+    private Button   btnSearch, btnSaveMeal;
+    private Spinner  spinnerFoods;
     private DatabaseHelper db;
     private List<Product> products = new ArrayList<>();
 
@@ -34,68 +36,101 @@ public class AddMealActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_meal);
 
-        spinnerFoods    = findViewById(R.id.spinnerFoods);
-        etQuantityGrams = findViewById(R.id.etQuantity);
-        Button btnSave  = findViewById(R.id.btnSaveMeal);
-        db = new DatabaseHelper(this);
+        etSearchTerm = findViewById(R.id.etSearchTerm);
+        btnSearch    = findViewById(R.id.btnSearch);
+        spinnerFoods = findViewById(R.id.spinnerFoods);
+        etQuantity   = findViewById(R.id.etQuantity);
+        btnSaveMeal  = findViewById(R.id.btnSaveMeal);
+        db           = new DatabaseHelper(this);
 
-        // Uděláme hledání "vejce" – můžeš předělat na vlastní vyhledávací pole
-        fetchProductsFromOff("vejce");
+        btnSearch.setOnClickListener(v -> {
+            String term = etSearchTerm.getText().toString().trim();
+            if (term.isEmpty()) {
+                Toast.makeText(this, "Zadej hledaný výraz", Toast.LENGTH_SHORT).show();
+            } else {
+                fetchProductsFromOff(term);
+            }
+        });
 
-        btnSave.setOnClickListener(v -> {
+        btnSaveMeal.setOnClickListener(v -> {
+            // 1) Získej index vybrané položky
             int pos = spinnerFoods.getSelectedItemPosition();
+            if (pos < 0 || pos >= products.size()) {
+                Toast.makeText(this, "Vyber položku ze seznamu", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 2) Podle indexu si vyber Product
             Product chosen = products.get(pos);
-            int grams = Integer.parseInt(etQuantityGrams.getText().toString());
+
+            // 3) Načti počet 100g porcí, které uživatel zadal
+            String s = etQuantity.getText().toString().trim();
+            if (s.isEmpty()) {
+                Toast.makeText(this, "Zadej počet porcí", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            int portions = Integer.parseInt(s);
+
+            // 4) Spočítej celkový protein
+            double proteinPer100g = chosen.getNutriments().getProteinsPer100g();
+            double totalProtein   = proteinPer100g * portions;
+
+            // 5) Ulož do DB: ukládáme protein na 100g a počet porcí
             String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                     .format(new Date());
+            db.addMeal(chosen.getDisplayName(), proteinPer100g, portions, date);
 
-            // spočítáme proteiny na zadané gramy
-            double prot100g = chosen.getNutriments().getProteinsPer100g();
-            double totalProtein = prot100g * grams / 100.0;
-
-            // Uložíme label a množství proteinů
-            db.addMeal(chosen.getDisplayName(), totalProtein, 1, date);
+            // 6) Ukonči Activity a vrať se do MainActivity
             finish();
         });
     }
 
     private void fetchProductsFromOff(String query) {
-        ApiService service = ApiClient.getClient().create(ApiService.class);
-        service.searchProducts(query, 1, 1)
-                .enqueue(new Callback<SearchResponse>() {
-                    @Override
-                    public void onResponse(Call<SearchResponse> call, Response<SearchResponse> resp) {
-                        if (!resp.isSuccessful() || resp.body()==null) {
-                            Toast.makeText(AddMealActivity.this,
-                                    "Chyba načtení z OFF", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        products.clear();
-                        products.addAll(resp.body().getProducts());
-                        updateSpinner();
+        ApiService svc = ApiClient.getClient().create(ApiService.class);
+        svc.searchProducts(query, 1, 1).enqueue(new Callback<SearchResponse>() {
+            @Override public void onResponse(Call<SearchResponse> call, Response<SearchResponse> resp) {
+                if (!resp.isSuccessful() || resp.body() == null) {
+                    Toast.makeText(AddMealActivity.this,
+                            "Chyba načtení dat", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // odfiltrovat jen položky, kde jsou dostupné proteiny >0
+                List<Product> all = resp.body().getProducts();
+                products = new ArrayList<>();
+                for (Product p : all) {
+                    if (p.getNutriments() != null
+                            && p.getNutriments().getProteinsPer100g() > 0) {
+                        products.add(p);
                     }
-                    @Override
-                    public void onFailure(Call<SearchResponse> call, Throwable t) {
-                        Toast.makeText(AddMealActivity.this,
-                                "OFF API selhalo: "+t.getMessage(),
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
+                }
+                if (products.isEmpty()) {
+                    Toast.makeText(AddMealActivity.this,
+                            "Žádné položky s nenulovým obsahem bílkovin.\n"
+                                    + "Zkus např. anglicky \"chicken breast\"",
+                            Toast.LENGTH_LONG).show();
+                }
+                updateSpinner();
+            }
+            @Override public void onFailure(Call<SearchResponse> call, Throwable t) {
+                Toast.makeText(AddMealActivity.this,
+                        "OFF API selhalo: " + t.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void updateSpinner() {
         List<String> labels = new ArrayList<>();
         for (Product p : products) {
-            labels.add(p.getDisplayName());
+            double prot = p.getNutriments().getProteinsPer100g();
+            labels.add(p.getDisplayName() + " (" + prot + " g/100 g)");
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
                 labels
         );
-        adapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item
-        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerFoods.setAdapter(adapter);
     }
 }
