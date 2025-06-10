@@ -1,5 +1,4 @@
 package com.example.fitnessapp;
-
 /**
  * Jedna jídla (záznam v DB), včetně ID, názvu, makroživin na 100g a počtu porcí.
  */
@@ -10,20 +9,22 @@ public class Meal {
     private double  carbsPer100g;
     private double  fatPer100g;
     private int     portions;
+    private final String date;
 
     // Konstruktor pro načtení z DB
-    public Meal(int id,
-                String label,
-                double proteinPer100g,
-                double carbsPer100g,
-                double fatPer100g,
-                int portions) {
-        this.id             = id;
-        this.label          = label;
+    public Meal(int id, String label, double proteinPer100g, double carbsPer100g, double fatPer100g, int portions, String date) {
+        this.id = id;
+        this.label = label;
         this.proteinPer100g = proteinPer100g;
-        this.carbsPer100g   = carbsPer100g;
-        this.fatPer100g     = fatPer100g;
-        this.portions       = portions;
+        this.carbsPer100g = carbsPer100g;
+        this.fatPer100g = fatPer100g;
+        this.portions = portions;
+        this.date = date;  // Přiřazení data
+    }
+
+    // Gettery pro všechna pole, včetně data
+    public String getDate() {
+        return date;
     }
 
     // Gettery a settery

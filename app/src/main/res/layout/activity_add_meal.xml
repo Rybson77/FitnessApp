@@ -30,7 +30,9 @@
         android:backgroundTint="@color/colorSurface"
         app:layout_constraintTop_toBottomOf="@id/topAppBarAdd"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btnSearch"/>
+        app:layout_constraintEnd_toStartOf="@+id/btnSearch"
+        android:layout_marginTop="16dp"
+        android:paddingEnd="16dp"/>
 
     <Button
         android:id="@+id/btnSearch"
@@ -42,16 +44,20 @@
         android:backgroundTint="@color/colorAccent"
         app:layout_constraintTop_toTopOf="@id/etSearchTerm"
         app:layout_constraintStart_toEndOf="@id/etSearchTerm"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
 
     <!-- Výběr potraviny -->
     <Spinner
         android:id="@+id/spinnerFoods"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:popupBackground="@color/colorSurface"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/etSearchTerm"
+        android:background="@drawable/spinner_background"
+        android:popupBackground="@drawable/spinner_dropdown_background"
+        android:spinnerMode="dropdown"
+        android:textColor="@color/colorText"
+        app:layout_constraintTop_toBottomOf="@id/btnSearch"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -65,10 +71,22 @@
         android:textColor="@color/colorOnBackground"
         android:backgroundTint="@color/colorSurface"
         android:inputType="number"
-        android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/spinnerFoods"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <!-- DatePicker -->
+    <DatePicker
+        android:id="@+id/datePicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:calendarViewShown="false"
+        android:spinnersShown="true"
+        app:layout_constraintTop_toBottomOf="@id/etQuantity"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
 
     <!-- Uložit -->
     <Button
@@ -79,8 +97,9 @@
         android:text="@string/btn_save"
         android:textColor="@color/colorOnAccent"
         android:backgroundTint="@color/colorAccent"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/etQuantity"
+        app:layout_constraintTop_toBottomOf="@id/datePicker"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

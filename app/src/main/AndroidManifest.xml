@@ -19,8 +19,6 @@
             </intent-filter>
         </activity>
 
-        <!-- AddMealActivity nemá intent-filter, může být exportovaná i neexportovaná.
-             Doporučuji explicitně nastavit android:exported="false" -->
         <activity
             android:name=".AddMealActivity"
             android:exported="false" />

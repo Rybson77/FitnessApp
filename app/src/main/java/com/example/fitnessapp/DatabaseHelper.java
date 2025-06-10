@@ -70,7 +70,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.query(
                 TABLE_MEALS,
-                new String[]{COL_ID, COL_LABEL, COL_PROTEIN, COL_CARBS, COL_FAT, COL_QTY},
+                new String[]{COL_ID, COL_LABEL, COL_PROTEIN, COL_CARBS, COL_FAT, COL_QTY, COL_DATE},
                 COL_DATE + " = ?",
                 new String[]{ date },
                 null, null, null
@@ -82,7 +82,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             double carbs    = c.getDouble(3);
             double fat      = c.getDouble(4);
             int    qty      = c.getInt(5);
-            list.add(new Meal(id, label, prot, carbs, fat, qty));
+            String dateValue = c.getString(6);
+            list.add(new Meal(id, label, prot, carbs, fat, qty, dateValue));
         }
         c.close();
         db.close();

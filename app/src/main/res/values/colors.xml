@@ -17,4 +17,6 @@
     <color name="colorOnBackground">#FFFFFF</color>
     <color name="colorOnSurface">#E0E0E0</color>
     <color name="colorOnAccent">#000000</color>
+    <color name="colorText">#FFFFFF</color> <!-- Bílá barva textu pro spinner -->
+
 </resources>
