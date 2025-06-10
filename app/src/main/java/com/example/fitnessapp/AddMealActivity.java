@@ -53,17 +53,13 @@ public class AddMealActivity extends AppCompatActivity {
         });
 
         btnSaveMeal.setOnClickListener(v -> {
-            // 1) Získej index vybrané položky
             int pos = spinnerFoods.getSelectedItemPosition();
-            if (pos < 0 || pos >= products.size()) {
-                Toast.makeText(this, "Vyber položku ze seznamu", Toast.LENGTH_SHORT).show();
+            if (pos<0 || pos>=products.size()) {
+                Toast.makeText(this, "Vyber položku", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            // 2) Podle indexu si vyber Product
             Product chosen = products.get(pos);
 
-            // 3) Načti počet 100g porcí, které uživatel zadal
             String s = etQuantity.getText().toString().trim();
             if (s.isEmpty()) {
                 Toast.makeText(this, "Zadej počet porcí", Toast.LENGTH_SHORT).show();
@@ -71,16 +67,21 @@ public class AddMealActivity extends AppCompatActivity {
             }
             int portions = Integer.parseInt(s);
 
-            // 4) Spočítej celkový protein
-            double proteinPer100g = chosen.getNutriments().getProteinsPer100g();
-            double totalProtein   = proteinPer100g * portions;
+            double prot = chosen.getNutriments().getProteinsPer100g();
+            double carbs= chosen.getNutriments().getCarbsPer100g();
+            double fat  = chosen.getNutriments().getFatPer100g();
 
-            // 5) Ulož do DB: ukládáme protein na 100g a počet porcí
             String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                     .format(new Date());
-            db.addMeal(chosen.getDisplayName(), proteinPer100g, portions, date);
 
-            // 6) Ukonči Activity a vrať se do MainActivity
+            db.addMeal(
+                    chosen.getDisplayName(),
+                    prot,
+                    carbs,
+                    fat,
+                    portions,
+                    date
+            );
             finish();
         });
     }
@@ -89,31 +90,29 @@ public class AddMealActivity extends AppCompatActivity {
         ApiService svc = ApiClient.getClient().create(ApiService.class);
         svc.searchProducts(query, 1, 1).enqueue(new Callback<SearchResponse>() {
             @Override public void onResponse(Call<SearchResponse> call, Response<SearchResponse> resp) {
-                if (!resp.isSuccessful() || resp.body() == null) {
+                if (!resp.isSuccessful() || resp.body()==null) {
                     Toast.makeText(AddMealActivity.this,
-                            "Chyba načtení dat", Toast.LENGTH_SHORT).show();
+                            "Chyba OFF API", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                // odfiltrovat jen položky, kde jsou dostupné proteiny >0
-                List<Product> all = resp.body().getProducts();
-                products = new ArrayList<>();
-                for (Product p : all) {
-                    if (p.getNutriments() != null
-                            && p.getNutriments().getProteinsPer100g() > 0) {
-                        products.add(p);
-                    }
-                }
+                // filtr: protein>0, carbo>0, fat>0
+                products = resp.body().getProducts().stream()
+                        .filter(p ->
+                                p.getNutriments()!=null
+                                        && p.getNutriments().getProteinsPer100g()>0
+                                        && p.getNutriments().getCarbsPer100g()>0
+                                        && p.getNutriments().getFatPer100g()>0
+                        ).collect(Collectors.toList());
                 if (products.isEmpty()) {
                     Toast.makeText(AddMealActivity.this,
-                            "Žádné položky s nenulovým obsahem bílkovin.\n"
-                                    + "Zkus např. anglicky \"chicken breast\"",
+                            "Žádné položky s nenulovými makronutrienty",
                             Toast.LENGTH_LONG).show();
                 }
                 updateSpinner();
             }
             @Override public void onFailure(Call<SearchResponse> call, Throwable t) {
                 Toast.makeText(AddMealActivity.this,
-                        "OFF API selhalo: " + t.getMessage(),
+                        "OFF selhalo: "+t.getMessage(),
                         Toast.LENGTH_LONG).show();
             }
         });
@@ -122,13 +121,16 @@ public class AddMealActivity extends AppCompatActivity {
     private void updateSpinner() {
         List<String> labels = new ArrayList<>();
         for (Product p : products) {
-            double prot = p.getNutriments().getProteinsPer100g();
-            labels.add(p.getDisplayName() + " (" + prot + " g/100 g)");
+            labels.add(String.format(
+                    "%s (P:%.0f C:%.0f F:%.0f/100g)",
+                    p.getDisplayName(),
+                    p.getNutriments().getProteinsPer100g(),
+                    p.getNutriments().getCarbsPer100g(),
+                    p.getNutriments().getFatPer100g()
+            ));
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                labels
+                this, android.R.layout.simple_spinner_item, labels
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerFoods.setAdapter(adapter);

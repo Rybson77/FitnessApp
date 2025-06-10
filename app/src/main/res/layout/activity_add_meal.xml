@@ -4,56 +4,83 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorBackground"
     android:padding="16dp">
 
-    <!-- Vyhledávací pole -->
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBarAdd"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorSurface"
+        android:title="Přidat jídlo"
+        android:titleTextColor="@color/colorOnSurface"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Hledání -->
     <EditText
         android:id="@+id/etSearchTerm"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:hint="Hledaný výraz"
-        app:layout_constraintEnd_toStartOf="@+id/btnSearch"
+        android:hint="@string/hint_search_term"
+        android:textColorHint="@color/colorOnSurface"
+        android:textColor="@color/colorOnBackground"
+        android:backgroundTint="@color/colorSurface"
+        app:layout_constraintTop_toBottomOf="@id/topAppBarAdd"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/btnSearch"/>
 
     <Button
         android:id="@+id/btnSearch"
+        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hledej"
+        android:text="@string/btn_search"
+        android:textColor="@color/colorOnAccent"
+        android:backgroundTint="@color/colorAccent"
         app:layout_constraintTop_toTopOf="@id/etSearchTerm"
         app:layout_constraintStart_toEndOf="@id/etSearchTerm"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Výběr potraviny -->
     <Spinner
         android:id="@+id/spinnerFoods"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:popupBackground="@color/colorSurface"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/etSearchTerm"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Počet porcí -->
     <EditText
         android:id="@+id/etQuantity"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="@string/hint_quantity"
+        android:textColorHint="@color/colorOnSurface"
+        android:textColor="@color/colorOnBackground"
+        android:backgroundTint="@color/colorSurface"
         android:inputType="number"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/spinnerFoods"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Uložit -->
     <Button
         android:id="@+id/btnSaveMeal"
+        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/btn_save"
+        android:textColor="@color/colorOnAccent"
+        android:backgroundTint="@color/colorAccent"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/etQuantity"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

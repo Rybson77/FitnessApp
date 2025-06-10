@@ -3,7 +3,11 @@
     <string name="app_name">FitnessApp</string>
     <string name="hint_quantity">Počet 100 g porcí</string>
     <string name="btn_save">Uložit</string>
-
+    <string name="btn_search">Vyhledat</string>
     <string name="btn_add_meal">Přidat jídlo</string>
     <string name="protein_default">Protein: 0 g</string>
+    <string name="carbs_default">Sacharidy: 0 g</string>
+    <string name="fat_default">Tuky: 0 g</string>
+
+    <string name="hint_search_term">Vyhledat: </string>
 </resources>
