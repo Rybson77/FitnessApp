@@ -1,10 +1,13 @@
 package com.example.fitnessapp;
 
+
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+
 import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private String selectedDate;
 
 
+    int i = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,39 +52,41 @@ public class MainActivity extends AppCompatActivity {
         btnAddMeal = findViewById(R.id.btnAddMeal);
         btnChangeDate = findViewById(R.id.btnChangeDate);
 
-        // Výchozí datum - dnešní datum
-        selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
         // Tlačítko pro přidání jídla
         btnAddMeal.setOnClickListener(v -> {
             Intent intent = new Intent(this, AddMealActivity.class);
             intent.putExtra("selectedDate", selectedDate);  // Předáme vybrané datum
-            startActivity(intent);
+            startActivityForResult(intent, 1);
         });
 
         // Změna data
-        btnChangeDate.setOnClickListener(v -> showDatePickerDialog());
+        btnChangeDate.setOnClickListener(v -> openDatePicker());
 
         // Dlouhé podržení položky pro smazání
         listViewMeals.setOnItemLongClickListener((parent, view, position, id) -> {
             Meal m = todayMeals.get(position);
             db.deleteMeal(m.getId());
             Toast.makeText(this, "Smazáno: " + m.getLabel(), Toast.LENGTH_SHORT).show();
-            displayTodayMeals();
+            displayTodayMeals(selectedDate);
             return true;
         });
+        if(i==0){
+            selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+            updateLabel(selectedDate);
+            i++;
+        }
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        displayTodayMeals();
+        displayTodayMeals(selectedDate);
     }
 
-
-
-    private void displayTodayMeals() {
+    private void displayTodayMeals(String selectDate) {
+        this.selectedDate=selectDate;
         todayMeals = db.getMealsByDate(selectedDate);  // Načteme jídla pro vybrané datum
 
         List<String> display = new ArrayList<>();
@@ -102,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         tvFat.setText("Tuky: " + totalF + " g");
 
         // Nastavení max hodnot pro progress bary
+
         progressProtein.setMax(100);
         progressCarbs.setMax(100);
         progressFat.setMax(100);
@@ -110,25 +118,66 @@ public class MainActivity extends AppCompatActivity {
         progressCarbs.setProgress(totalC);
         progressFat.setProgress(totalF);
 
-        listViewMeals.setAdapter(new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                display
-        ));
+        listViewMeals.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, display));
     }
 
-    private void showDatePickerDialog() {
+    private void openDatePicker() {
+        // Získáme aktuální datum z kalendáře
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        // Vytvoření DatePickerDialog
         DatePickerDialog datePickerDialog = new DatePickerDialog(
-                this,
-                (view, year, month, dayOfMonth) -> {
-                    selectedDate = String.format("%d-%02d-%02d", year, month + 1, dayOfMonth);
-                    displayTodayMeals();  // Načteme a zobrazíme jídla pro nové datum
-                    Toast.makeText(this, "Vybráno datum: " + selectedDate, Toast.LENGTH_SHORT).show();
+                MainActivity.this,  // Kontext
+                new DatePickerDialog.OnDateSetListener() {  // Listener pro získání vybraného data
+                    @Override
+                    public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
+                        // Formátování vybraného data ve formátu YYYY-MM-DD
+                        selectedDate = selectedYear + "-" + (selectedMonth + 1) + "-" + selectedDay;
+                        // Změna textu tlačítka na vybrané datum
+                        updateLabel(selectedDate);
+                        // Můžete použít vybrané datum jak potřebujete
+                        // Například, uložit do databáze nebo provést nějakou akci s tímto datem
+                        Log.d("Picker-SelectedDate", "Vybrané datum: " + selectedDate);
+                    }
                 },
-                Integer.parseInt(selectedDate.substring(0, 4)),
-                Integer.parseInt(selectedDate.substring(5, 7)) - 1,
-                Integer.parseInt(selectedDate.substring(8, 10))
+                year, month, day // Výchozí hodnoty kalendáře (dnesní datum)
         );
+
+        // Nastavíme chování při zavření dialogu (volitelné)
+        datePickerDialog.setOnDismissListener(dialog -> Log.d("Picker-DatePicker", "Dialog zavřen"));
+        displayTodayMeals(selectedDate);
+        updateLabel(selectedDate);
+        // Ujistěte se, že se DatePickerDialog neuzavře automaticky (pokud je nastaveno nějaké chování pro výběr datumu)
+        datePickerDialog.setCancelable(true);
+
+        // Zobrazení DatePickerDialog
         datePickerDialog.show();
     }
+
+
+
+    private void updateLabel(String selectedDate) {
+        this.selectedDate = selectedDate;
+        btnChangeDate.setText(selectedDate);
+        db.displayAllMeals();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Zkontrolujeme, jestli je výsledek úspěšný
+        if (requestCode == 1) {  // Pokud jde o náš requestCode
+            if (resultCode == RESULT_OK) {
+                String selectedDate = data.getStringExtra("selectedDate");  // Získáme poslaný datum
+                Log.d("SelectedDate", "Vraceno z addactivity " + selectedDate);
+                displayTodayMeals(selectedDate);
+                updateLabel(selectedDate);
+            }
+        }
+    }
+
 }

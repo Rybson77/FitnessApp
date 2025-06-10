@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+
+
     public void addMeal(String label,
                         double proteinPer100g,
                         double carbsPer100g,
@@ -62,8 +65,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_QTY,      portions);
         cv.put(COL_DATE,     date);
         db.insert(TABLE_MEALS, null, cv);
+
         db.close();
+
     }
+    public void displayAllMeals() {
+        // Vytvořte SQL dotaz
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM meals";
+
+        // Proveďte dotaz a získáte Cursor
+        Cursor cursor = db.rawQuery(query, null);
+
+        // Projděte všechny řádky výsledků
+        if (cursor.moveToFirst()) {
+            do {
+                // Získejte hodnoty z každého sloupce
+                int id = cursor.getInt(cursor.getColumnIndex("id"));
+                String label = cursor.getString(cursor.getColumnIndex("label"));
+                double protein = cursor.getDouble(cursor.getColumnIndex("protein"));
+                double carbs = cursor.getDouble(cursor.getColumnIndex("carbs"));
+                double fat = cursor.getDouble(cursor.getColumnIndex("fat"));
+                int quantity = cursor.getInt(cursor.getColumnIndex("quantity"));
+                String date = cursor.getString(cursor.getColumnIndex("date"));
+
+                // Vypište všechny hodnoty do logu
+                Log.d("MealInfo-date", "ID: " + id +
+                        ", Label: " + label +
+                        ", Protein: " + protein +
+                        ", Carbs: " + carbs +
+                        ", Fat: " + fat +
+                        ", Quantity: " + quantity +
+                        ", Date: " + date);
+
+            } while (cursor.moveToNext());
+        }
+
+        // Uzavřete kurzor po použití
+        cursor.close();
+        db.close();
+   }
 
     public List<Meal> getMealsByDate(String date) {
         List<Meal> list = new ArrayList<>();

@@ -1,6 +1,8 @@
 package com.example.fitnessapp;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -94,6 +96,9 @@ public class AddMealActivity extends AppCompatActivity {
                     portions,
                     selectedDate  // Uložíme jídlo k aktuálně vybranému datu
             );
+            Intent returnIntent = new Intent();
+            returnIntent.putExtra("selectedDate", selectedDate);  // Předáme vybrané datum
+            setResult(RESULT_OK, returnIntent);
             finish();
         });
     }
@@ -152,6 +157,8 @@ public class AddMealActivity extends AppCompatActivity {
         int month = datePicker.getMonth() + 1; // Měsíce jsou 0-indexované
         int year = datePicker.getYear();
         selectedDate = String.format("%d-%02d-%02d", year, month, day);
-        Toast.makeText(this, selectedDate, Toast.LENGTH_SHORT).show();
+        Log.d("SelectedDate", "New date selected in Addmeal: " + selectedDate);
+
+
     }
 }
