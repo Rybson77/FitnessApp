@@ -5,6 +5,10 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 
@@ -32,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnAddMeal, btnChangeDate;
     private List<Meal> todayMeals = new ArrayList<>();
     private String selectedDate;
+    private View rootLayout;
 
 
     int i = 0;
@@ -40,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        rootLayout = findViewById(R.id.rootLayout);
+
 
         db = new DatabaseHelper(this);
         listViewMeals = findViewById(R.id.listMeals);
@@ -124,40 +131,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openDatePicker() {
-        // Získáme aktuální datum z kalendáře
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        rootLayout.setVisibility(View.GONE);
+        Calendar c = Calendar.getInstance();
+        int year = c.get(Calendar.YEAR),
+                month = c.get(Calendar.MONTH),
+                day = c.get(Calendar.DAY_OF_MONTH);
 
-        // Vytvoření DatePickerDialog
-        DatePickerDialog datePickerDialog = new DatePickerDialog(
-                MainActivity.this,  // Kontext
-                new DatePickerDialog.OnDateSetListener() {  // Listener pro získání vybraného data
-                    @Override
-                    public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
-                        // Formátování vybraného data ve formátu YYYY-MM-DD
-                        selectedDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay);
-                        // Změna textu tlačítka na vybrané datum
-                        // Můžete použít vybrané datum jak potřebujete
-                        // Například, uložit do databáze nebo provést nějakou akci s tímto datem
-                        Log.d("Picker-SelectedDate", "Vybrané datum: " + selectedDate);
-                        updateLabel(selectedDate);
-                        displayTodayMeals(selectedDate);
-                    }
+        DatePickerDialog dpd = new DatePickerDialog(
+                this,
+                R.style.MyDatePickerDialogTheme,
+                (view, y, m, d) -> {
+                    String sel = String.format("%04d-%02d-%02d", y, m+1, d);
+                    updateLabel(sel);
+                    displayTodayMeals(sel);
                 },
-                year, month, day // Výchozí hodnoty kalendáře (dnesní datum)
+                year, month, day
         );
+        dpd.setOnDismissListener(dialog -> rootLayout.setVisibility(View.VISIBLE));
+        dpd.show();
 
-        // Nastavíme chování při zavření dialogu (volitelné)
-        datePickerDialog.setOnDismissListener(dialog -> Log.d("Picker-DatePicker", "Dialog zavřen"));
-        Log.d("Picker-SelectedDate", "Vybrané datum: Pepicek");
-        Log.d("Picker-SelectedDate", "Vybrané datum: Marenka");
-        // Ujistěte se, že se DatePickerDialog neuzavře automaticky (pokud je nastaveno nějaké chování pro výběr datumu)
-        datePickerDialog.setCancelable(true);
-
-        // Zobrazení DatePickerDialog
-        datePickerDialog.show();
+        // Po zobrazení dialogu upravíme jeho Window tak, aby byl vycentrovaný
+        Window window = dpd.getWindow();
+        if (window != null) {
+            WindowManager.LayoutParams params = window.getAttributes();
+            params.gravity = Gravity.CENTER;             // Ustřednění dialogu
+            params.width   = WindowManager.LayoutParams.WRAP_CONTENT;
+            params.height  = WindowManager.LayoutParams.WRAP_CONTENT;
+            window.setAttributes(params);
+        }
     }
 
 

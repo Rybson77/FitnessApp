@@ -18,8 +18,25 @@
         <!-- texty -->
         <item name="android:textColor">@color/colorOnBackground</item>
         <item name="android:textColorPrimary">@color/colorOnBackground</item>
+    </style>
+    <style name="MyDatePickerDialogTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Barva zvýraznění v kalendáři -->
+        <item name="colorAccent">@color/colorAccent</item>
+        <!-- Barva vybraného dne a kontrolek -->
+        <item name="colorControlActivated">@color/colorAccent</item>
+        <!-- Barva textu nadpisu (rok, měsíc) -->
+        <item name="android:textColorPrimary">@color/white</item>
+        <!-- Vlastní styl pro DatePicker -->
+        <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
+    </style>
 
-        <!-- případně: -->
-        <!-- <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.UnelevatedButton</item> -->
+    <!-- Styl pro samotný DatePicker -->
+    <style name="MyDatePickerStyle" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Barva čísel v kalendáři -->
+        <item name="android:calendarTextColor">@color/white</item>
+        <!-- (volitelné) spinner místo kalendáře -->
+        <!-- <item name="android:datePickerMode">spinner</item> -->
     </style>
 </resources>
+
+
