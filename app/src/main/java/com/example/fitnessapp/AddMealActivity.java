@@ -27,14 +27,17 @@ import java.util.stream.Collectors;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
+/**
+ * Aktivita pro vyhledání potraviny přes Open Food Facts,
+ * výběr porcí a přiřazení k datu.
+ */
 public class AddMealActivity extends AppCompatActivity {
 
     private EditText etSearchTerm, etQuantity;
     private Button btnSearch, btnSaveMeal;
     private Spinner spinnerFoods;
     private DatabaseHelper db;
-    private List<Product> products = new ArrayList<>();
+    private List<Product> products = new ArrayList<>(); //Seznam vysledku z API
 
     private DatePicker datePicker;
 
@@ -56,8 +59,9 @@ public class AddMealActivity extends AppCompatActivity {
         btnSaveMeal = findViewById(R.id.btnSaveMeal);
         datePicker = findViewById(R.id.datePicker);
 
-        db = new DatabaseHelper(this);
+        db = new DatabaseHelper(this);// Připojení k databázi
 
+        // Listener na tlačítko pro vyhledání položek
         btnSearch.setOnClickListener(v -> {
             String term = etSearchTerm.getText().toString().trim();
             if (term.isEmpty()) {
@@ -69,6 +73,7 @@ public class AddMealActivity extends AppCompatActivity {
 
         //Toast.makeText(this, selectedDate, Toast.LENGTH_SHORT).show();
 
+        // Listener na tlačítko pro uložení jídla
         btnSaveMeal.setOnClickListener(v -> {
             int pos = spinnerFoods.getSelectedItemPosition();
             if (pos < 0 || pos >= products.size()) {
@@ -83,11 +88,14 @@ public class AddMealActivity extends AppCompatActivity {
                 return;
             }
             int portions = Integer.parseInt(s);
-
+            // Vypočítáme makroživiny dle porcí
             double prot = chosen.getNutriments().getProteinsPer100g();
             double carbs = chosen.getNutriments().getCarbsPer100g();
             double fat = chosen.getNutriments().getFatPer100g();
+
             getSelectedDate();
+
+            // Uložíme do DB: název, makra, porce, a původní selectedDate
             db.addMeal(
                     chosen.getDisplayName(),
                     prot,
@@ -99,10 +107,13 @@ public class AddMealActivity extends AppCompatActivity {
             Intent returnIntent = new Intent();
             returnIntent.putExtra("selectedDate", selectedDate);  // Předáme vybrané datum
             setResult(RESULT_OK, returnIntent);
-            finish();
+            finish(); // Vrátíme se zpět do MainActivity
         });
     }
-
+    /**
+     * Vyhledá produkty v OFF API, filtruje je podle nenulových makroživin
+     * a zobrazí v Spinneru.
+     */
     private void fetchProductsFromOff(String query) {
         ApiService svc = ApiClient.getClient().create(ApiService.class);
         svc.searchProducts(query, 1, 1).enqueue(new Callback<SearchResponse>() {
@@ -113,7 +124,7 @@ public class AddMealActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Filtr: protein > 0, carbo > 0, fat > 0
+                // Filtrujeme položky, které mají nenulová makra
                 products = resp.body().getProducts().stream()
                         .filter(p -> p.getNutriments() != null
                                 && p.getNutriments().getProteinsPer100g() > 0
@@ -135,6 +146,9 @@ public class AddMealActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Naplní Spinner názvy produktů a jejich hodnotami makroživin.
+     */
     private void updateSpinner() {
         List<String> labels = new ArrayList<>();
         for (Product p : products) {
@@ -152,6 +166,8 @@ public class AddMealActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerFoods.setAdapter(adapter);
     }
+
+    //Denug metoda vraci logDatum
     private void getSelectedDate() {
         int day = datePicker.getDayOfMonth();
         int month = datePicker.getMonth() + 1; // Měsíce jsou 0-indexované

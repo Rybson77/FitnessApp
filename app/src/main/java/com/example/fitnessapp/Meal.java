@@ -1,6 +1,7 @@
 package com.example.fitnessapp;
 /**
- * Jedna jídla (záznam v DB), včetně ID, názvu, makroživin na 100g a počtu porcí.
+ * Reprezentuje jednu položku jídla v deníku.
+ * Uchovává ID, název, makroživiny na 100 g, počet porcí a datum.
  */
 public class Meal {
     private int     id;

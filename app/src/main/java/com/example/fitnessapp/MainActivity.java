@@ -45,10 +45,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Načteme kořenový layout
         rootLayout = findViewById(R.id.rootLayout);
 
-
+        //Inicializujeme DB helper
         db = new DatabaseHelper(this);
+
+        //Načteme odkazy na UI komponenty
         listViewMeals = findViewById(R.id.listMeals);
         tvProtein = findViewById(R.id.tvProtein);
         tvCarbs = findViewById(R.id.tvCarbs);
@@ -60,17 +64,17 @@ public class MainActivity extends AppCompatActivity {
         btnChangeDate = findViewById(R.id.btnChangeDate);
 
 
-        // Tlačítko pro přidání jídla
+        // Otevření AddMealActivity pro přidání jídla
         btnAddMeal.setOnClickListener(v -> {
             Intent intent = new Intent(this, AddMealActivity.class);
             intent.putExtra("selectedDate", selectedDate);  // Předáme vybrané datum
             startActivityForResult(intent, 1);
         });
 
-        // Změna data
+        // Otevření DatePickerDialogu
         btnChangeDate.setOnClickListener(v -> openDatePicker());
 
-        // Dlouhé podržení položky pro smazání
+        // Dlouhý klik pro smazání položky
         listViewMeals.setOnItemLongClickListener((parent, view, position, id) -> {
             Meal m = todayMeals.get(position);
             db.deleteMeal(m.getId());
@@ -90,9 +94,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        displayTodayMeals(selectedDate);
+        displayTodayMeals(selectedDate); // Při návratu aktualizujeme UI
     }
-
+    /**
+     * Nacte z DB polozky pro selectedDate a prerendruje ListView + ProgressBary.
+     */
     private void displayTodayMeals(String selectDate) {
         this.selectedDate=selectDate;
         Log.d("Picker-MealsTodayDate", "Vybrané datum: " + selectedDate);
@@ -129,7 +135,9 @@ public class MainActivity extends AppCompatActivity {
 
         listViewMeals.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, display));
     }
-
+    /**
+     * Zobrazi DatePickerDialog, schova UI až po vyběru data.
+     */
     private void openDatePicker() {
         rootLayout.setVisibility(View.GONE);
         Calendar c = Calendar.getInstance();
@@ -147,14 +155,15 @@ public class MainActivity extends AppCompatActivity {
                 },
                 year, month, day
         );
+        //Po zavření dialogu UI opět zobrazíme
         dpd.setOnDismissListener(dialog -> rootLayout.setVisibility(View.VISIBLE));
         dpd.show();
 
-        // Po zobrazení dialogu upravíme jeho Window tak, aby byl vycentrovaný
+        // Po zobrazeni dialogu upravime jeho Window tak, aby byl vycentrovany
         Window window = dpd.getWindow();
         if (window != null) {
             WindowManager.LayoutParams params = window.getAttributes();
-            params.gravity = Gravity.CENTER;             // Ustřednění dialogu
+            params.gravity = Gravity.CENTER;             // Ustrednani dialogu
             params.width   = WindowManager.LayoutParams.WRAP_CONTENT;
             params.height  = WindowManager.LayoutParams.WRAP_CONTENT;
             window.setAttributes(params);
@@ -162,13 +171,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
+    /** Aktualizuje text na tlačítku na aktuálně vybrané datum. */
     private void updateLabel(String selectedDate) {
         this.selectedDate = selectedDate;
         btnChangeDate.setText(selectedDate);
         db.displayAllMeals();
     }
 
+    /** Po ukonceni aktivity Addmeal prijme parametr selected date aby se otevreli zaznamy k tomu dni*/
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

@@ -10,12 +10,16 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pomocná třída pro práci se SQLite databází.
+ * Vytváří tabulku meals a poskytuje metody pro CRUD operace.
+ */
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME     = "fitness.db";
     private static final int    DB_VER      = 3;                  // ++ verze
     private static final String TABLE_MEALS = "meals";
 
-    // sloupce
+    // Definice názvů sloupců
     private static final String COL_ID       = "id";
     private static final String COL_LABEL    = "label";
     private static final String COL_PROTEIN  = "protein";
@@ -27,7 +31,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public DatabaseHelper(Context ctx) {
         super(ctx, DB_NAME, null, DB_VER);
     }
-
+    // SQL pro vytvoření tabulky meals
     @Override
     public void onCreate(SQLiteDatabase db) {
         String sql = "CREATE TABLE " + TABLE_MEALS + " ("
@@ -49,7 +53,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-
+    /**
+     * Vloží nové jídlo do tabulky.
+     */
     public void addMeal(String label,
                         double proteinPer100g,
                         double carbsPer100g,
@@ -69,6 +75,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
 
     }
+
+    //DEBUG METODA VYPIS DB
     public void displayAllMeals() {
         // Vytvořte SQL dotaz
         SQLiteDatabase db = this.getReadableDatabase();
@@ -105,7 +113,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         db.close();
    }
-
+    /**
+     * Vrátí seznam jídel zadaného dne.
+     * @param date String ve formátu YYYY-MM-DD
+     */
     public List<Meal> getMealsByDate(String date) {
         List<Meal> list = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
@@ -130,7 +141,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return list;
     }
-
+    /**
+     * Smaže záznam jídla podle ID.
+     */
     public void deleteMeal(int id) {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(TABLE_MEALS, COL_ID + " = ?", new String[]{ String.valueOf(id) });
