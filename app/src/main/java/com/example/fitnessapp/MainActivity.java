@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
             displayTodayMeals(selectedDate);
             return true;
         });
+
         if(i==0){
             selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
             updateLabel(selectedDate);
@@ -87,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void displayTodayMeals(String selectDate) {
         this.selectedDate=selectDate;
+        Log.d("Picker-MealsTodayDate", "Vybrané datum: " + selectedDate);
         todayMeals = db.getMealsByDate(selectedDate);  // Načteme jídla pro vybrané datum
 
         List<String> display = new ArrayList<>();
@@ -135,12 +137,13 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
                         // Formátování vybraného data ve formátu YYYY-MM-DD
-                        selectedDate = selectedYear + "-" + (selectedMonth + 1) + "-" + selectedDay;
+                        selectedDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay);
                         // Změna textu tlačítka na vybrané datum
-                        updateLabel(selectedDate);
                         // Můžete použít vybrané datum jak potřebujete
                         // Například, uložit do databáze nebo provést nějakou akci s tímto datem
                         Log.d("Picker-SelectedDate", "Vybrané datum: " + selectedDate);
+                        updateLabel(selectedDate);
+                        displayTodayMeals(selectedDate);
                     }
                 },
                 year, month, day // Výchozí hodnoty kalendáře (dnesní datum)
@@ -148,8 +151,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Nastavíme chování při zavření dialogu (volitelné)
         datePickerDialog.setOnDismissListener(dialog -> Log.d("Picker-DatePicker", "Dialog zavřen"));
-        displayTodayMeals(selectedDate);
-        updateLabel(selectedDate);
+        Log.d("Picker-SelectedDate", "Vybrané datum: Pepicek");
+        Log.d("Picker-SelectedDate", "Vybrané datum: Marenka");
         // Ujistěte se, že se DatePickerDialog neuzavře automaticky (pokud je nastaveno nějaké chování pro výběr datumu)
         datePickerDialog.setCancelable(true);
 
